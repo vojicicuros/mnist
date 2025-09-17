@@ -1,0 +1,347 @@
+clc; clear all; close all;
+% Biranje test signala
+izbor = 3;
+% Definisanje odnosa nominalnog i kontaminiranog Gausovskog suma
+odnos = 0.1;
+% Definisanje pomocne konstante koje uticu na estimaciju
+C1 = 1; %konstanta za diskriminacionu fju
+C2 = 1; %konstata za generalisanu gresku predikcije
+% Funckija za kalmanovu filtraciju
+[p,Z,y,y_sum, y_hat, teta, epsilon2, t, duzina, omega, beli_sum] = Kalmanova_filtracija_Robust(izbor, odnos);
+% Funkcija za estimaciju preko diskriminacione funkcije
+[teta_hat_1, z1_novo, lambda1] = Diskriminaciona_fja(p,Z,y_hat, teta, epsilon2, duzina, omega, C1);
+% Funkcija za estimaciju preko generalisane greske predikcije
+[teta_hat_2, z2_novo, lambda2] = GGP(p,Z,y_hat, teta, epsilon2, duzina, omega, C2);
+
+% Originalni signal
+% figure(1)
+% plot(y(8:duzina));
+% title('Originalni signal')
+% 
+% %Zasumljeni signal
+% figure(2)
+% plot(y_sum(8:duzina))
+% title('Zasumljeni signal')
+% 
+% % Isfiltrirani signal 
+% figure(3)
+% plot(y_hat(8:duzina))
+% title('Isfiltrirani signal')
+% 
+% %==========================================================================
+% %                               Sistem 2. reda
+% %==========================================================================
+% 
+% % VFF kod diskriminacione fje
+% figure(4)
+% plot(lambda1(1:duzina))
+% title('Faktor zaboravljanja kod diskriminacione funkcije')
+% ylabel('\lambda')
+% axis([0 1000 -1 1.5])
+% 
+% % VFF kod GGP
+% figure(5)
+% plot(lambda2(1:duzina))
+% title('Faktor zaboravljanja kod generalisane greske predikcije')
+% ylabel('\lambda')
+% 
+% % Polovi
+% %z = roots([teta(1,900) teta(2,1) teta(3,1) teta(4,1) teta(5,1) teta(6,1) teta(7,1) teta(8,1)])
+% %figure(6)
+% %zplane(z)
+% 
+% % Estimacija parametra preko diskriminacione fje
+% figure(7)
+% subplot(2,1,1)
+% plot(teta(1,8:duzina));
+% title('Estimacija prvog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold on;
+% plot(teta_hat_1(1,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold off
+% legend('originalni','estimirani')
+% 
+% subplot(2,1,2)
+% plot(teta(2,8:duzina));
+% title('Estimacija drugog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_2');
+% hold on
+% plot(teta_hat_1(2,8:duzina),'r');
+% legend('originalni','estimirani')
+% xlabel('k');
+% ylabel('\theta_2');
+% hold off;
+% 
+% % Estimacija parametra preko GGP
+% figure(8)
+% subplot(2,1,1)
+% plot(teta(1,8:duzina));
+% title('Estimacija prvog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold on;
+% plot(teta_hat_2(1,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold off
+% legend('originalni','estimirani')
+% 
+% subplot(2,1,2)
+% plot(teta(2,8:duzina));
+% title('Estimacija drugog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_2');
+% hold on
+% plot(teta_hat_2(2,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_2');
+% legend('originalni','estimirani')
+% hold off;
+
+%Isfiltrirani signal i signal nakon MGLR
+figure(9)
+plot(y_hat(1:duzina-50))
+hold on;
+plot(z1_novo, 'r' );
+title('Poredjenje isfiltriranog signala i signala nakon RRLS (MGLR)')
+legend('Robusni Kalman','RRLS')
+hold off
+
+%Isfiltrirani signal i signal nakon MGLR
+figure(10)
+plot(y_hat(1:duzina))
+hold on;
+plot(z2_novo, 'r' );
+title('Poredjenje isfiltriranog signala i signala nakon RRLS (GGP)')
+legend('Robusni Kalman','RRLS')
+hold off
+
+%==========================================================================
+%                             Sistem 8. reda
+%==========================================================================
+
+% VFF kod diskriminacione fje
+% figure(4)
+% plot(lambda1(8:duzina))
+% title('Faktor zaboravljanja kod diskriminacione funkcije za sistem 8. reda')
+% 
+% % VFF kod GGP
+% figure(5)
+% plot(lambda2(8:duzina))
+% title('Faktor zaboravljanja kod generalisane greske predikcije za sistem 8. reda')
+% 
+% % Polovi
+% %z = roots([teta(1,900) teta(2,1) teta(3,1) teta(4,1) teta(5,1) teta(6,1) teta(7,1) teta(8,1)])
+% %figure(6)
+% %zplane(z)
+% 
+% % Estimacija parametra preko diskriminacione fje
+% % 1. 
+% figure(7)
+% subplot(2,1,1)
+% plot(teta(1,8:duzina));
+% title('Estimacija prvog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold on;
+% plot(teta_hat_1(1,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold off
+% legend('originalni','estimirani')
+% %2.
+% subplot(2,1,2)
+% plot(teta(2,8:duzina));
+% title('Estimacija drugog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_2');
+% hold on
+% plot(teta_hat_1(2,8:duzina),'r');
+% legend('originalni','estimirani')
+% xlabel('k');
+% ylabel('\theta_2');
+% hold off;
+% %3.
+% figure(8)
+% subplot(2,1,1)
+% plot(teta(3,8:duzina));
+% title('Estimacija treceg parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_3');
+% hold on;
+% plot(teta_hat_1(3,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_3');
+% hold off
+% legend('originalni','estimirani')
+% %4.
+% subplot(2,1,2)
+% plot(teta(4,8:duzina));
+% title('Estimacija cetvrtog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_4');
+% hold on
+% plot(teta_hat_1(4,8:duzina),'r');
+% legend('originalni','estimirani')
+% xlabel('k');
+% ylabel('\theta_4');
+% hold off;
+% %5.
+% figure(9)
+% subplot(2,1,1)
+% plot(teta(5,8:duzina));
+% title('Estimacija petog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_5');
+% hold on;
+% plot(teta_hat_1(5,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_5');
+% hold off
+% legend('originalni','estimirani')
+% %6.
+% subplot(2,1,2)
+% plot(teta(6,8:duzina));
+% title('Estimacija sestog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_6');
+% hold on
+% plot(teta_hat_1(6,8:duzina),'r');
+% legend('originalni','estimirani')
+% xlabel('k');
+% ylabel('\theta_6');
+% hold off;
+% %7.
+% figure(10)
+% subplot(2,1,1)
+% plot(teta(7,8:duzina));
+% title('Estimacija sedmog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_7');
+% hold on;
+% plot(teta_hat_1(7,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_7');
+% hold off
+% legend('originalni','estimirani')
+% 
+% subplot(2,1,2)
+% plot(teta(8,8:duzina));
+% title('Estimacija osmog parametra preko diskriminacione funkcije');
+% xlabel('k');
+% ylabel('\theta_8');
+% hold on
+% plot(teta_hat_1(8,8:duzina),'r');
+% legend('originalni','estimirani')
+% xlabel('k');
+% ylabel('\theta_8');
+% hold off;
+% 
+% % Estimacija parametra preko GGP
+% figure(11)
+% %1.
+% subplot(2,1,1)
+% plot(teta(1,8:duzina));
+% title('Estimacija prvog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold on;
+% plot(teta_hat_2(1,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_1');
+% hold off
+% legend('originalni','estimirani')
+% %2.
+% subplot(2,1,2)
+% plot(teta(2,8:duzina));
+% title('Estimacija drugog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_2');
+% hold on
+% plot(teta_hat_2(2,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_2');
+% legend('originalni','estimirani')
+% hold off;
+% 
+% figure(12)
+% %3.
+% subplot(2,1,1)
+% plot(teta(3,8:duzina));
+% title('Estimacija treceg parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_3');
+% hold on;
+% plot(teta_hat_2(3,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_3');
+% hold off
+% legend('originalni','estimirani')
+% %4.
+% subplot(2,1,2)
+% plot(teta(4,8:duzina));
+% title('Estimacija cetvrtog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_4');
+% hold on
+% plot(teta_hat_2(4,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_4');
+% legend('originalni','estimirani')
+% hold off;
+% 
+% figure(13)
+% %5.
+% subplot(2,1,1)
+% plot(teta(5,8:duzina));
+% title('Estimacija petog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_5');
+% hold on;
+% plot(teta_hat_2(5,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_5');
+% hold off
+% legend('originalni','estimirani')
+% %6.
+% subplot(2,1,2)
+% plot(teta(6,8:duzina));
+% title('Estimacija sestog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_6');
+% hold on
+% plot(teta_hat_2(6,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_6');
+% legend('originalni','estimirani')
+% hold off;
+% 
+% figure(14)
+% %7.
+% subplot(2,1,1)
+% plot(teta(7,8:duzina));
+% title('Estimacija sedmog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_7');
+% hold on;
+% plot(teta_hat_2(7,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_7');
+% hold off
+% legend('originalni','estimirani')
+% %8.
+% subplot(2,1,2)
+% plot(teta(8,8:duzina));
+% title('Estimacija osmog parametra preko generalisane greske predikcije');
+% xlabel('k');
+% ylabel('\theta_8');
+% hold on
+% plot(teta_hat_2(8,8:duzina),'r');
+% xlabel('k');
+% ylabel('\theta_8');
+% legend('originalni','estimirani')
+% hold off;

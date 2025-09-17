@@ -1,0 +1,50 @@
+clc
+clear all
+%%construct dataset  
+ii=0;
+for jj=0:10
+      str1=int2str(jj);
+       for k=1:8
+          str2=int2str(k);   
+          name_image=strcat('baza',str1,'00',str2);
+          fname=imread(name_image);
+          image_bw=im2bw(fname);
+          col_image=getfeature(image_bw); %64x1
+          data_set(:,ii+1)=col_image;
+          ii=ii+1;
+      end
+end
+ Out=-1*ones(11,88); 
+    st=1;
+    for jj=1:11
+        en=8*jj;
+        Out(jj,st:en)=1;
+        st=en+1;
+    end
+min_in=0.0001*ones(64,1);
+max_in=ones(64,1);
+R=[min_in max_in];
+net=newff(R, [14 11],{'tansig','purelin'});
+net.trainParam.epochs=1000; net.trainParam.goal=0.00001;
+net=train(net,data_set,Out);
+display('Enter baza cifra like '9001',9004,8007,10005,..')
+str1=input('please enter baza cifra:');
+%str1=int2str(str1);
+%fig=imread(strcat('baza',str1));
+fig=imread(strcat(str1));
+
+fig_bw=im2bw(fig);                   %  convert image to binary image (0,1)
+fig_feature=getfeature(fig_bw);
+y1=sim(net,fig_feature);
+result=find(y1==max(y1))-1
+net_out=int2str(result);
+figure(1);
+imshow(fig);
+fig_det=strcat(net_out,'.jpg');
+figure(2);
+imshow(fig_det);
+
+
+
+
+        

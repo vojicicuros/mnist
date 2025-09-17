@@ -1,0 +1,34 @@
+%                       Test signal 1 
+%==========================================================================
+
+function [duzina, t, p, teta, y] = test_signal1()
+%definisanje parametara AR modela signala
+
+p = 2;                            %red AR modela
+duzina = 1000;                    %duzina signala
+t = 1 : duzina;                   %vremenski interval
+%promena frekvencije
+f(1,1:800) = 0.2;
+f(1,801:1000) = 0.4;
+
+arg(1,t) = 2*pi*f(1,t);
+teta1(1,t) = -2*cos(arg(1,t));     % prvi parametar AR modela
+teta2 = 1;                       % drugi parametar AR modela
+
+%spajanje teta1 i teta2 u jednu matricu
+teta = zeros(p,duzina);        
+for i = 1 : duzina
+    teta(:,i)=[teta1(1,i); teta2];
+end
+
+%definisanje pocetnih uslova AR modela (y(k-1) i y(k-2))
+y(1,1:2) = cos(arg(1,1:2));
+
+%definisanje AR model signala preko parametara AR modela
+for i = 3 : duzina
+    y(1,i)=teta1(1,i) * y(1,i-1) + teta2 * y(1,i-2);
+end
+
+%transportovanje matrice AR modela da bi se dobile odgovarajuce dimenzije matrice
+y = y';
+end
